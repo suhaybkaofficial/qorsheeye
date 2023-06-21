@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "689564766095",
+    "project_id": "qorsheeye-bde5e",
+    "storage_bucket": "qorsheeye-bde5e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:689564766095:android:a817a3fee439fac70705fa",
+        "android_client_info": {
+          "package_name": "com.suhaybka.qorsheeye"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "689564766095-sdr9ss4it4fdlg96ifqv3tuidmsdafeb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.suhaybka.qorsheeye",
+            "certificate_hash": "2712492152b953a2aff026ad137fa1abfd67de66"
+          }
+        },
+        {
+          "client_id": "689564766095-m80tmg5naoip9h1dkkb3kh1j0dajvr23.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA9lR2517EQjk2DYSCDsAgBIEip0ovNVT0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "689564766095-lk5s7iom4mv5s1fqfbpmsdnmptknlaei.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
