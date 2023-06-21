@@ -13,7 +13,6 @@ const Profile = () => {
   const timestamp = parsed?.lastLoginAt *1000;
   const date = new Date(timestamp);
   const dateString = date.toLocaleString();
-console.log(dateString);
   return (
     <View className="flex-1" style={{ backgroundColor: Colors.secondary }}>
       <SafeAreaView>

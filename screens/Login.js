@@ -13,8 +13,9 @@ import SignInWithSocials from "../components/SignInWithSocials";
 import { Appearance } from "react-native";
 import { AuthContext } from "../utils/AuthContext";
 const Login = () => {
-  
-  const {theme,setIsLoggedIn,signInWithGoogle} = useContext(AuthContext)
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const {theme,setIsLoggedIn,signInWithGoogle,login,loading} = useContext(AuthContext)
   const navigation = useNavigation()
   const [showPassword,setShowPassword] = useState(true)
   const handleShowPassword = ()=>{
@@ -38,6 +39,8 @@ const Login = () => {
             <TextInput
               className="flex-grow ml-2"
               placeholder="Youremail@example.com"
+              onChangeText={(email) => setEmail(email)}
+
             />
           </View>
           <View className="bg-[#e7e5e5] py-3 px-6 rounded-full my-2 flex flex-row items-center ">
@@ -47,6 +50,8 @@ const Login = () => {
               placeholder="**************************"
               secureTextEntry={showPassword}
               maxLength={20}
+              onChangeText={(password) => setPassword(password)}
+
             />
            {
             showPassword ? 
@@ -65,9 +70,26 @@ const Login = () => {
           </View>
           <View>
             <TouchableOpacity style={{backgroundColor:Colors.secondary}} className=" py-3 px-6 rounded-full my-2" 
-            onPress={()=>setIsLoggedIn(true)}
+            onPress={()=>login(email,password)}
             >
-           <Text className="font-semibold text-center text-white">Sign In</Text>
+           {
+            loading ? 
+            <>
+            {theme === "dark" ? (
+            <>
+              <ActivityIndicator size="large" color={Colors.white} />
+            </>
+          ) : (
+            <>
+              <ActivityIndicator size="large" color={Colors.secondary} />
+            </>
+          )}
+            </>
+            :
+            <>
+            <Text className="font-semibold text-center text-white">Sign In</Text>
+            </>
+           }
             </TouchableOpacity>
           </View>
           <View className="flex flex-row justify-center items-center space-x-2 my-1">

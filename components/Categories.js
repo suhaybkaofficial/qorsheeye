@@ -9,25 +9,73 @@ import { ScrollView } from "react-native";
 const DATA = [
   {
     id: "1",
-    title: "Website",
+    title: "Personal",
     image: {
-      src: require("../assets/category1.png"),
+      src: require("../assets/personal.png"),
     },
     tasks: 6,
   },
   {
     id: "2",
-    title: "Mobile App",
+    title: "Work",
     image: {
-      src: require("../assets/category2.png"),
+      src: require("../assets/work.png"),
     },
     tasks: 7,
   },
   {
     id: "3",
-    title: "Logo Design",
+    title: "Home",
     image: {
-      src: require("../assets/category3.png"),
+      src: require("../assets/home.png"),
+    },
+    tasks: 2,
+  },
+  {
+    id: "4",
+    title: "Health & Fitness",
+    image: {
+      src: require("../assets/health.png"),
+    },
+    tasks: 2,
+  },
+  {
+    id: "5",
+    title: "Education",
+    image: {
+      src: require("../assets/education.png"),
+    },
+    tasks: 2,
+  },
+  {
+    id: "6",
+    title: "Finance",
+    image: {
+      src: require("../assets/finance.png"),
+    },
+    tasks: 2,
+  },
+  {
+    id: "7",
+    title: "Entertainment",
+    image: {
+      src: require("../assets/entertainment.png"),
+    },
+    tasks: 2,
+  },
+  {
+    id: "8",
+    title: "Reminders",
+    image: {
+      src: require("../assets/reminders.png"),
+    },
+    tasks: 2,
+  },
+  {
+    id: "9",
+    title: "Others",
+    image: {
+      src: require("../assets/others.png"),
     },
     tasks: 2,
   },
@@ -44,9 +92,9 @@ const Categories = () => {
               : " font-semibold text-xl"
           }
         >
-          Categories
+          Tasks Organized By Categories
         </Text>
-        <TouchableOpacity className="mr-6">
+        {/* <TouchableOpacity className="mr-6">
           <Text
             className={
               theme === "dark"
@@ -56,7 +104,7 @@ const Categories = () => {
           >
             Add +
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
       <View>
         <FlatList

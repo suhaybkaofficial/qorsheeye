@@ -18,6 +18,10 @@ import {
   where,
 } from "firebase/firestore";
 import { Colors } from "../constants/Colors";
+
+const androidClientId = Constants.manifest.extra.androidClientId;
+const expoClientId = Constants.manifest.extra.expoClientId;
+const iosClientId = Constants.manifest.extra.iosClientId;
 WebBrowser.maybeCompleteAuthSession();
 const EXPO_REDIRECT_PARAMS = {
   useProxy: true,
@@ -41,15 +45,11 @@ const SignInWithSocials = () => {
     setLoading,
     theme,
   } = useContext(AuthContext);
-  console.log("Loading ", setLoading);
   const [userData, setUserData] = useState([]);
   const [request, response, promptAsync] = Google.useAuthRequest({
-    androidClientId:
-      "689564766095-h6866gpf4st2clghuc14mvnui3ju4ffk.apps.googleusercontent.com",
-    iosClientId:
-      "689564766095-hpg72gg472mqekajj1i3dc6l94c8vsep.apps.googleusercontent.com",
-    expoClientId:
-      "689564766095-m80tmg5naoip9h1dkkb3kh1j0dajvr23.apps.googleusercontent.com",
+    androidClientId,
+    iosClientId,
+    expoClientId,
     redirectUri,
   });
 
@@ -73,7 +73,6 @@ const SignInWithSocials = () => {
       setUserData(user);
     } catch (error) {
       // Add your own error handler here
-      console.log(error);
     }
   };
   useEffect(() => {
@@ -86,9 +85,6 @@ const SignInWithSocials = () => {
           const collectionRef = collection(db, "users");
           const q = query(collectionRef, where("email", "==", userData?.email));
           const querySnapshot = await getDocs(q);
-          console.log("------------");
-          console.log(querySnapshot.empty);
-          console.log("-------------");
 
           let docId;
           if (querySnapshot.empty) {
@@ -104,9 +100,7 @@ const SignInWithSocials = () => {
                   authProvider: authProvider,
                   registeredAt: serverTimestamp(),
                 });
-                console.log("Document written with ID: ", docRef.id);
                 docId = docRef.id;
-                console.log(docId, "docID");
                 const newObj = {
                   lastLoginAt: unixTimestamp,
                   displayName: userData?.given_name,
@@ -115,7 +109,6 @@ const SignInWithSocials = () => {
                   photoURL: userData?.picture,
                   userDocId: docId,
                 };
-                console.log(newObj);
                 let stringified = JSON.stringify(newObj);
                 setUserInfo(stringified);
                 let store = await AsyncStorage.setItem("userInfo", stringified);
@@ -129,10 +122,8 @@ const SignInWithSocials = () => {
             
             setLoading(false)
             querySnapshot.forEach((doc) => {
-              console.log("doc id -------", doc.id);
               docId = doc.id;
             });
-            console.log(docId);
             
             const newObj = {
               lastLoginAt: unixTimestamp,
@@ -142,7 +133,6 @@ const SignInWithSocials = () => {
               photoURL: userData?.picture,
               userDocId: docId,
             };
-            console.log(newObj);
             let stringified = JSON.stringify(newObj);
             setUserInfo(stringified);
             let store = await AsyncStorage.setItem("userInfo", stringified);
@@ -150,7 +140,6 @@ const SignInWithSocials = () => {
           }
         }
       } else {
-        console.log("No User Data");
       }
     };
     loginTheUser();

@@ -3,17 +3,22 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import Constants from "expo-constants";
 
+const firebaseAPIKEY = Constants.manifest.extra.firebaseAPIKEY;
+const authDomain = Constants.manifest.extra.authDomain;
+const projectId = Constants.manifest.extra.projectId;
+const storageBucket = Constants.manifest.extra.storageBucket;
+const messagingSenderId = Constants.manifest.extra.messagingSenderId;
+const appId = Constants.manifest.extra.appId;
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyAC25RqmTHx7cWSRsCgjF2Wuc4rBNBABVY",
-  authDomain: "qorsheeye-bde5e.firebaseapp.com",
-  projectId: "qorsheeye-bde5e",
-  storageBucket: "qorsheeye-bde5e.appspot.com",
-  messagingSenderId: "689564766095",
-  appId: "1:689564766095:web:4ad25c5102b041570705fa",
+  apiKey:firebaseAPIKEY,
+  authDomain,
+  projectId,
+  storageBucket,
+  messagingSenderId,
+  appId,
 };
 
 // Initialize Firebase

@@ -9,6 +9,7 @@ import {
   onAuthStateChanged,
   updateProfile,
   sendPasswordResetEmail,
+  signInWithEmailAndPassword,
 } from "firebase/auth";
 import {
   collection,
@@ -29,15 +30,59 @@ export const AuthProvider = ({ children }) => {
   const [userInfo, setUserInfo] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [Loading, setLoading] = useState(false);
+  const [categoryModalVisible, setCategoryModalVisible] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
   const [errorType, setErrorType] = useState("");
   const [theme, setTheme] = useState("light");
-  const login = (email, password) => {};
+  const login = (email, password) => {
+    setLoading(true);
+    let trimmedEmail = email.replace(/^\s+|\s+$/gm, "");
+    if (trimmedEmail.length === 0 || password.length === 0) {
+      let errorMsg = "Email/Password Are Required";
+      generateErrorMessage(errorMsg);
+      setUserInfo("");
+      setLoading(false);
+    } else {
+      signInWithEmailAndPassword(auth, trimmedEmail, password)
+        .then((userCredential) => {
+          // Signed in
+          setLoading(false);
+          const user = userCredential.user;
+
+          let stringified = JSON.stringify(user);
+          setUserInfo(stringified);
+          setIsLoggedIn(true);
+          let storeUserData = AsyncStorage.setItem("userInfo", stringified);
+
+          let userId = user.uid;
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          setLoading(false);
+          if (errorMessage == "Firebase: Error (auth/user-not-found).") {
+            let errorMsg = "Email/Password mismatch";
+            generateErrorMessage(errorMsg);
+            setUserInfo("");
+          } else if (errorMessage == "Firebase: Error (auth/wrong-password).") {
+            let errorMsg = "Email/Password mismatch";
+            generateErrorMessage(errorMsg);
+            setUserInfo("");
+          } else if (errorMessage == "Firebase: Error (auth/invalid-email).") {
+            let errorMsg = "Invalid Email";
+            generateErrorMessage(errorMsg);
+            setUserInfo("");
+          } else {
+            generateErrorMessage(errorMessage);
+            setUserInfo("");
+          }
+        });
+    }
+  };
   const signout = () => {
     setUserInfo("");
     setIsLoggedIn(false);
     let removeItem = AsyncStorage.removeItem("userInfo");
-    console.log("Signout");
   };
   const changeTheme = () => {
     if (theme === "light") {
@@ -54,12 +99,10 @@ export const AuthProvider = ({ children }) => {
       if (value) {
         setTheme(value);
       }
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
   };
   const generateErrorMessage = (errorMessage) => {
-    ToastAndroid.show(errorMessage, ToastAndroid.LONG,4000);
+    ToastAndroid.show(errorMessage, ToastAndroid.LONG, 4000);
   };
   const signUpWithEmailAndPassword = async (fullname, email, password) => {
     let trimmedEmail = email.replace(/^\s+|\s+$/gm, "");
@@ -78,79 +121,81 @@ export const AuthProvider = ({ children }) => {
     } else {
       const preventDuplicates = async () => {
         const collectionRef = collection(db, "users");
-          const q = query(collectionRef, where("email", "==", trimmedEmail));
-          const querySnapshot = await getDocs(q);
-          if(querySnapshot.empty){
-            createUserWithEmailAndPassword(auth, trimmedEmail, password)
-        .then((userCredential) => {
-          // Signed in
-          const user = userCredential.user;
-          const user1 = auth.currentUser;
-          updateProfile(auth.currentUser, {
-            displayName: fullname,
-            photoURL: photoURL,
-          })
-            .then(() => {
-              // Profile updated!
-              const saveToFireStore =  async () =>{
-                try {
-                    const docRef = await addDoc(collection(db, "users"), {
-                      fullname: user1.displayName,
-                      email: user1.email,
-                      photoURL:user1.photoURL,
-                      userId:user1.uid,
-                      authProvider:"Email and Password",
-                      registeredAt:serverTimestamp(),
-  
-                    });
-                    console.log("Document written with ID: ", docRef.id);
-                  } catch (e) {
-                    console.error("Error adding document: ", e);
-                  }
-            }
-            saveToFireStore();
-            const user = userCredential.user;
-            let stringified = JSON.stringify(user)
-            setUserInfo(stringified)
-            setIsLoggedIn(true)
-            let storeUserData = AsyncStorage.setItem('userInfo', stringified);
-           
+        const q = query(collectionRef, where("email", "==", trimmedEmail));
+        const querySnapshot = await getDocs(q);
+        if (querySnapshot.empty) {
+          createUserWithEmailAndPassword(auth, trimmedEmail, password)
+            .then((userCredential) => {
+              // Signed in
+              const user = userCredential.user;
+              const user1 = auth.currentUser;
+              updateProfile(auth.currentUser, {
+                displayName: fullname,
+                photoURL: photoURL,
+              })
+                .then(() => {
+                  // Profile updated!
+                  const saveToFireStore = async () => {
+                    try {
+                      const docRef = await addDoc(collection(db, "users"), {
+                        fullname: user1.displayName,
+                        email: user1.email,
+                        photoURL: user1.photoURL,
+                        userId: user1.uid,
+                        authProvider: "Email and Password",
+                        registeredAt: serverTimestamp(),
+                      });
+                    } catch (e) {
+                      console.error("Error adding document: ", e);
+                    }
+                  };
+                  saveToFireStore();
+                  const user = userCredential.user;
+                  let stringified = JSON.stringify(user);
+                  setUserInfo(stringified);
+                  setIsLoggedIn(true);
+                  let storeUserData = AsyncStorage.setItem(
+                    "userInfo",
+                    stringified
+                  );
+                })
+                .catch((error) => {
+                  // An error occurred
+                  setLoading(false);
+                  const errorCode = error.code;
+                  const errorMessage = error.message;
+                });
             })
             .catch((error) => {
-              // An error occurred
-              setLoading(false);
               const errorCode = error.code;
               const errorMessage = error.message;
-              console.log(errorMessage);
+              setLoading(false);
+              if (
+                errorMessage == "Firebase: Error (auth/email-already-in-use)."
+              ) {
+                let errorMsg =
+                  "Email Already Registered Sign in With Email/Password or Sign In With Google ";
+                generateErrorMessage(errorMsg);
+                setUserInfo("");
+              } else if (
+                errorMessage == "Firebase: Error (auth/invalid-email)."
+              ) {
+                let errorMsg = "Invalid Email Address";
+                generateErrorMessage(errorMsg);
+                setUserInfo("");
+              } else if (
+                errorMessage ==
+                "Firebase: Password should be at least 6 characters (auth/weak-password)."
+              ) {
+                let errorMsg = "Password should be at least 6 characters";
+                generateErrorMessage(errorMsg);
+                setUserInfo("");
+              }
             });
-        })
-        .catch((error) => {
-          const errorCode = error.code;
-          const errorMessage = error.message;
-          setLoading(false);
-          console.log(errorMessage);
-          if (errorMessage == "Firebase: Error (auth/email-already-in-use).") {
-            let errorMsg = "Email Already Registered Sign in With Email/Password or Sign In With Google ";
-            generateErrorMessage(errorMsg);
-            setUserInfo("");
-          } else if (errorMessage == "Firebase: Error (auth/invalid-email).") {
-            let errorMsg = "Invalid Email Address";
-            generateErrorMessage(errorMsg);
-            setUserInfo("");
-          } else if (
-            errorMessage ==
-            "Firebase: Password should be at least 6 characters (auth/weak-password)."
-          ) {
-            let errorMsg = "Password should be at least 6 characters";
-            generateErrorMessage(errorMsg);
-            setUserInfo("");
-          }
-        });
-          }
-          else{
-            let errorMessage = "Email Already Registered Sign in With Google"
-            generateErrorMessage(errorMessage)
-          }
+        } else {
+          let errorMessage = "Email Already Registered Sign in With Google";
+          generateErrorMessage(errorMessage);
+        }
       };
       preventDuplicates();
       setLoading(false);
@@ -164,9 +209,7 @@ export const AuthProvider = ({ children }) => {
         setIsLoggedIn(true);
       }
     } catch {
-      (e) => {
-        console.log(e);
-      };
+      (e) => {};
     }
   };
   useEffect(() => {
@@ -186,6 +229,8 @@ export const AuthProvider = ({ children }) => {
         login,
         signout,
         isLoggedIn,
+        categoryModalVisible,
+        setCategoryModalVisible,
         theme,
         setTheme,
         changeTheme,

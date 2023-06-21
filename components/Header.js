@@ -12,7 +12,6 @@ import { Pressable } from "react-native";
 const Header = () => {
   const { theme, changeTheme, userInfo } = useContext(AuthContext);
   const [fullname, setFullname] = useState("");
-  console.log(userInfo);
   let parsed = JSON.parse(userInfo);
 
   return (
