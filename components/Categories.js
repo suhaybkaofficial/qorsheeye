@@ -1,5 +1,5 @@
 import { View, Text } from "react-native";
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../utils/AuthContext";
 import { FlatList } from "react-native";
 import { Image } from "react-native";
@@ -81,7 +81,8 @@ const DATA = [
   },
 ];
 const Categories = () => {
-  let { theme } = useContext(AuthContext);
+  let { theme,tasks} = useContext(AuthContext);
+
   return (
     <View className="ml-6">
       <View className="flex flex-row justify-between items-center">
@@ -120,6 +121,7 @@ const Categories = () => {
           horizontal
           showsHorizontalScrollIndicator={false}
         />
+        {/* <Text>{tasks[0].taskTitle}</Text> */}
       </View>
     </View>
   );

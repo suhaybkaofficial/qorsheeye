@@ -28,12 +28,15 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState("");
   const [userInfo, setUserInfo] = useState("");
+  const [userData,setUserData] = useState([])
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [Loading, setLoading] = useState(false);
-  const [categoryModalVisible, setCategoryModalVisible] = useState(true);
+  const [categoryModalVisible, setCategoryModalVisible] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [errorType, setErrorType] = useState("");
   const [theme, setTheme] = useState("light");
+  
+  const [tasks,setTasks] = useState([])
   const login = (email, password) => {
     setLoading(true);
     let trimmedEmail = email.replace(/^\s+|\s+$/gm, "");
@@ -48,7 +51,7 @@ export const AuthProvider = ({ children }) => {
           // Signed in
           setLoading(false);
           const user = userCredential.user;
-
+          setUserData(user)
           let stringified = JSON.stringify(user);
           setUserInfo(stringified);
           setIsLoggedIn(true);
@@ -151,6 +154,7 @@ export const AuthProvider = ({ children }) => {
                   };
                   saveToFireStore();
                   const user = userCredential.user;
+                  setUserData(user)
                   let stringified = JSON.stringify(user);
                   setUserInfo(stringified);
                   setIsLoggedIn(true);
@@ -203,12 +207,15 @@ export const AuthProvider = ({ children }) => {
   };
   const addTask = async (taskTitle, taskDesc, category) => {
     setLoading(true);
+    let userData = JSON.parse(userInfo)
     try {
       const colRef = collection(db, "tasks");
       const docRef = await addDoc(colRef, {
         taskTitle,
         taskDesc,
         category,
+        status:"Pending",
+        email:userData.email,
         createdAt: serverTimestamp(),
       });
       let errorMsg = "Successfully added";
@@ -221,6 +228,34 @@ export const AuthProvider = ({ children }) => {
       generateErrorMessage(e);
     }
   };
+   const getTasks = () =>{
+    console.log(userInfo);
+  //   const colRef = collection(db,'tasks')
+  //   const q = query(colRef,where("email","==",userData?.email),orderBy("createdAt","desc"));
+  //  const unsubscribe =  onSnapshot(q,(snapshot)=>{
+  //   console.log(snapshot.length);
+  //   if(!snapshot.empty){
+  //     setTasks(
+  //       snapshot.docs.map(doc => ({
+  //       id:doc.id,
+  //       taskTitle:doc.data().taskTitle,
+  //       taskDesc:doc.data().taskDesc,
+  //       status:doc.data().status,
+  //       category:doc.data().category,
+  //       createdAt:doc.data().createdAt,
+  //       }))
+  //       )
+  //       console.log(tasks);
+  //   }
+  //   else{
+      
+  //   }
+  
+    
+  //   })
+    
+  //  return () => unsubscribe();
+   }
   const checkIfUserIsLoggedIn = async () => {
     try {
       const value = await AsyncStorage.getItem("userInfo");
@@ -235,6 +270,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     checkTheme();
     checkIfUserIsLoggedIn();
+    getTasks()
   }, []);
   return (
     <AuthContext.Provider
@@ -258,6 +294,9 @@ export const AuthProvider = ({ children }) => {
         signUpWithEmailAndPassword,
         generateErrorMessage,
         addTask,
+        tasks,
+        userData,
+        setUserData,
       }}
     >
       {children}
