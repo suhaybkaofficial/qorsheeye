@@ -1,71 +1,174 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React, { useContext } from 'react'
-import { Modal } from 'react-native';
-import { Pressable } from 'react-native';
-import { AuthContext } from '../utils/AuthContext';
-import { Feather, MaterialIcons } from '@expo/vector-icons';
-import { TextInput } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from "react-native";
+import React, { useContext, useState } from "react";
+import { Modal } from "react-native";
+import { Pressable } from "react-native";
+import { AuthContext } from "../utils/AuthContext";
+import DropDownPicker from "react-native-dropdown-picker";
+import {
+  AntDesign,
+  Feather,
+  FontAwesome,
+  FontAwesome5,
+  MaterialCommunityIcons,
+  MaterialIcons,
+} from "@expo/vector-icons";
+import { TextInput } from "react-native";
+import { Colors } from "../constants/Colors";
 
+import { Dropdown } from "react-native-element-dropdown";
 const AddCategoryModal = () => {
-    const [task,setTask] = useState("")
-    const {categoryModalVisible,setCategoryModalVisible,theme} = useContext(AuthContext)
+  const [taskTitle, setTaskTitle] = useState("");
+  const [taskDesc, setTaskDesc] = useState("");
+  const [open, setOpen] = useState(false);
+  const [category, setCategory] = useState("Personal");
+  const [isFocus, setIsFocus] = useState(false);
+  const [items, setItems] = useState([
+    { label: "Personal", value: "Personal" },
+    { label: "Work", value: "Work" },
+    { label: "Home", value: "Home" },
+    { label: "Health & Fitness", value: "Health & Fitness" },
+    { label: "Education", value: "Education" },
+    { label: "Finance", value: "Finance" },
+    { label: "Entertainment", value: "Entertainment" },
+    { label: "Reminders", value: "Reminders" },
+    { label: "Others", value: "Others" },
+  ]);
+  const { categoryModalVisible, setCategoryModalVisible, theme } =
+    useContext(AuthContext);
   return (
     <View>
-     <Modal
-        animationType="slide"
+      <Modal
+        animationType="fade"
         transparent={true}
         visible={categoryModalVisible}
         onRequestClose={() => {
-          Alert.alert('Modal has been closed.');
+          Alert.alert("Modal has been closed.");
           setCategoryModalVisible(!categoryModalVisible);
-        }}>
+        }}
+      >
         <View style={styles.centeredView}>
-          <View style={styles.modalView} className={theme === "light" ? "bg-[#202124] py-2 px-4 rounded-2xl":"bg-white p-2 px-4 rounded-2xl"}>
-            <Text className={theme==="light" ?"text-2xl font-semibold text-[#ffd72c] ":"text-2xl font-semibold text-[#ffd72c] "}>Add New Task</Text>
-            <View className="bg-[#e7e5e5] py-3 px-6 rounded-full my-2 flex flex-row items-center ">
-            <Feather name="mail" size={24} color={Colors.secondary} />
-            <TextInput
+          <View
+            style={styles.modalView}
+            className={
+              theme === "light"
+                ? "bg-[#202124] py-4 px-6 w-[90%] rounded-2xl mx-6"
+                : "bg-white p-4 px-6 w-[90%] rounded-2xl mx-6"
+            }
+          >
+            <Text
+              className={
+                theme === "light"
+                  ? "text-2xl font-semibold text-[#ffd72c] text-center "
+                  : "text-2xl font-semibold text-[#ffd72c]  text-center"
+              }
+            >
+              Add New Task
+            </Text>
+            {/* Task Title */}
+            <View className="bg-[#e7e5e5] py-3 px-6 rounded-xl my-2 flex flex-row items-center w-full ">
+              <FontAwesome5 name="tasks" size={24} color={Colors.secondary} />
+              <TextInput
+                numberOfLines={1}
+                className="flex-grow ml-2"
+                placeholder="Task Title"
+                onChangeText={(taskTitle) => setTaskTitle(taskTitle)}
+              />
+            </View>
+            {/* Task Description */}
+            <View className="bg-[#e7e5e5] py-3 px-6 rounded-xl my-2 flex flex-row items-center w-full">
+              <FontAwesome name="info" size={24} color={Colors.secondary} />
+              <TextInput
+                numberOfLines={4}
+                className="flex-grow ml-2"
+                placeholder="Task Short Description"
+                onChangeText={(taskDesc) => setTaskDesc(taskDesc)}
+                returnKeyType="none"
+                multiline
+                textAlignVertical="top"
+              />
+            </View>
+            {/* Task Category */}
+            <View className="bg-[#e7e5e5] py-3 px-6 rounded-xl my-2 flex flex-row items-center w-full">
+            <MaterialCommunityIcons
+                name="format-list-bulleted-type"
+                size={24}
+                color={isFocus ? Colors.secondary : "black"}
+              />
+             <ScrollView>
+             <Dropdown
+              listmode="SCROLLVIEW"
+               scrollViewProps={{
+                nestedScrollEnabled: true,
+          
+           }}
               className="flex-grow ml-2"
-              placeholder="Youremail@example.com"
-              onChangeText={(email) => setEmail(email)}
-
-            />
-          </View>
-            <Pressable
-              style={[styles.button]}
-              className="bg-red-600 text-white flex flex-row items-center justify-center space-x-2 my-2"
-              onPress={() => setCategoryModalVisible(!categoryModalVisible)}>
-              <Text className="text-white font-semibold">Cancel</Text>
-              <MaterialIcons name="cancel" size={24} color="white" />
-            </Pressable>
+                style={[styles.dropdown, isFocus && { borderColor: "blue" }]}
+                data={items}
+                search
+                showsVerticalScrollIndicator
+                autoScroll
+                maxHeight={300}
+                labelField="label"
+                valueField="value"
+                placeholder={!isFocus ? "Select item" : "..."}
+                searchPlaceholder="Search..."
+                value={category}
+                onFocus={() => setIsFocus(true)}
+                onBlur={() => setIsFocus(false)}
+                onChange={(item) => {
+                  setCategory(item.value);
+                  setIsFocus(false);
+                }}
+              />
+             </ScrollView>
+            </View>
+            {!open ? (
+              <>
+                <Pressable
+                  style={[styles.button]}
+                  className="bg-[#ffd72c] text-white flex flex-row items-center justify-center space-x-2 my-2 py-3 px-6 rounded-xl"
+                >
+                  <Text className="text-black font-semibold">Add Task</Text>
+                  <AntDesign name="checksquare" size={24} color="black" />
+                </Pressable>
+                <Pressable
+                  style={[styles.button]}
+                  className="bg-red-600 text-white flex flex-row items-center justify-center space-x-2 my-2 py-3 px-6 rounded-xl"
+                  onPress={() => setCategoryModalVisible(!categoryModalVisible)}
+                >
+                  <Text className="text-white font-semibold">Cancel</Text>
+                  <MaterialIcons name="cancel" size={24} color="white" />
+                </Pressable>
+              </>
+            ) : (
+              <></>
+            )}
           </View>
         </View>
       </Modal>
     </View>
-  )
-}
+  );
+};
 
-export default AddCategoryModal
+export default AddCategoryModal;
 
 const styles = StyleSheet.create({
-    centeredView: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: 22,
-      },
-    modalView: {
-        shadowColor: '#000',
-        shadowOffset: {
-          width: 0,
-          height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-      },
-      button: {
-        borderRadius: 20,
-        padding: 10,
-        elevation: 2,
-      },
-})
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 22,
+  },
+  modalView: {
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
+  button: {
+    elevation: 2,
+  },
+});
