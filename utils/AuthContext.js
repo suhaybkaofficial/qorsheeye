@@ -201,6 +201,26 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     }
   };
+  const addTask = async (taskTitle, taskDesc, category) => {
+    setLoading(true);
+    try {
+      const colRef = collection(db, "tasks");
+      const docRef = await addDoc(colRef, {
+        taskTitle,
+        taskDesc,
+        category,
+        createdAt: serverTimestamp(),
+      });
+      let errorMsg = "Successfully added";
+      generateErrorMessage(errorMsg);
+      setLoading(false);
+      setCategoryModalVisible(!categoryModalVisible)
+    } catch (e) {
+      console.error("Error adding document: ", e);
+      setLoading(false);
+      generateErrorMessage(e);
+    }
+  };
   const checkIfUserIsLoggedIn = async () => {
     try {
       const value = await AsyncStorage.getItem("userInfo");
@@ -237,6 +257,7 @@ export const AuthProvider = ({ children }) => {
         setIsLoggedIn,
         signUpWithEmailAndPassword,
         generateErrorMessage,
+        addTask,
       }}
     >
       {children}

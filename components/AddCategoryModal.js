@@ -1,4 +1,10 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import React, { useContext, useState } from "react";
 import { Modal } from "react-native";
 import { Pressable } from "react-native";
@@ -16,9 +22,13 @@ import { TextInput } from "react-native";
 import { Colors } from "../constants/Colors";
 
 import { Dropdown } from "react-native-element-dropdown";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { db } from "../utils/firebase";
+import { ActivityIndicator } from "react-native";
 const AddCategoryModal = () => {
   const [taskTitle, setTaskTitle] = useState("");
   const [taskDesc, setTaskDesc] = useState("");
+  const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [category, setCategory] = useState("Personal");
   const [isFocus, setIsFocus] = useState(false);
@@ -33,8 +43,14 @@ const AddCategoryModal = () => {
     { label: "Reminders", value: "Reminders" },
     { label: "Others", value: "Others" },
   ]);
-  const { categoryModalVisible, setCategoryModalVisible, theme } =
-    useContext(AuthContext);
+
+  const {
+    categoryModalVisible,
+    setCategoryModalVisible,
+    theme,
+    addTask,
+    Loading,
+  } = useContext(AuthContext);
   return (
     <View>
       <Modal
@@ -66,7 +82,11 @@ const AddCategoryModal = () => {
             </Text>
             {/* Task Title */}
             <View className="bg-[#e7e5e5] py-3 px-6 rounded-xl my-2 flex flex-row items-center w-full ">
-              <FontAwesome5 name="tasks" size={24} color={Colors.secondary} />
+              <MaterialCommunityIcons
+                name="format-list-bulleted-type"
+                size={24}
+                color={Colors.secondary}
+              />
               <TextInput
                 numberOfLines={1}
                 className="flex-grow ml-2"
@@ -76,69 +96,96 @@ const AddCategoryModal = () => {
             </View>
             {/* Task Description */}
             <View className="bg-[#e7e5e5] py-3 px-6 rounded-xl my-2 flex flex-row items-center w-full">
-              <FontAwesome name="info" size={24} color={Colors.secondary} />
+              <MaterialCommunityIcons
+                name="information"
+                size={24}
+                color={Colors.secondary}
+              />
               <TextInput
                 numberOfLines={4}
                 className="flex-grow ml-2"
                 placeholder="Task Short Description"
                 onChangeText={(taskDesc) => setTaskDesc(taskDesc)}
-                returnKeyType="none"
+                returnKeyType="done"
                 multiline
                 textAlignVertical="top"
               />
             </View>
             {/* Task Category */}
             <View className="bg-[#e7e5e5] py-3 px-6 rounded-xl my-2 flex flex-row items-center w-full">
-            <MaterialCommunityIcons
+              <MaterialCommunityIcons
                 name="format-list-bulleted-type"
                 size={24}
-                color={isFocus ? Colors.secondary : "black"}
+                color={Colors.secondary}
               />
-             <ScrollView>
-             <Dropdown
-              listmode="SCROLLVIEW"
-               scrollViewProps={{
-                nestedScrollEnabled: true,
-          
-           }}
-              className="flex-grow ml-2"
-                style={[styles.dropdown, isFocus && { borderColor: "blue" }]}
-                data={items}
-                search
-                showsVerticalScrollIndicator
-                autoScroll
-                maxHeight={300}
-                labelField="label"
-                valueField="value"
-                placeholder={!isFocus ? "Select item" : "..."}
-                searchPlaceholder="Search..."
-                value={category}
-                onFocus={() => setIsFocus(true)}
-                onBlur={() => setIsFocus(false)}
-                onChange={(item) => {
-                  setCategory(item.value);
-                  setIsFocus(false);
-                }}
-              />
-             </ScrollView>
+              <ScrollView>
+                <Dropdown
+                  listmode="SCROLLVIEW"
+                  scrollViewProps={{
+                    nestedScrollEnabled: true,
+                  }}
+                  className="flex-grow ml-2"
+                  style={[styles.dropdown, isFocus && { borderColor: "blue" }]}
+                  data={items}
+                  search
+                  showsVerticalScrollIndicator
+                  autoScroll
+                  maxHeight={300}
+                  labelField="label"
+                  valueField="value"
+                  placeholder={!isFocus ? "Select item" : "..."}
+                  searchPlaceholder="Search..."
+                  value={category}
+                  onFocus={() => setIsFocus(true)}
+                  onBlur={() => setIsFocus(false)}
+                  onChange={(item) => {
+                    setCategory(item.value);
+                    setIsFocus(false);
+                  }}
+                />
+              </ScrollView>
             </View>
             {!open ? (
               <>
-                <Pressable
-                  style={[styles.button]}
-                  className="bg-[#ffd72c] text-white flex flex-row items-center justify-center space-x-2 my-2 py-3 px-6 rounded-xl"
-                >
-                  <Text className="text-black font-semibold">Add Task</Text>
-                  <AntDesign name="checksquare" size={24} color="black" />
-                </Pressable>
-                <Pressable
-                  style={[styles.button]}
-                  className="bg-red-600 text-white flex flex-row items-center justify-center space-x-2 my-2 py-3 px-6 rounded-xl"
-                  onPress={() => setCategoryModalVisible(!categoryModalVisible)}
-                >
-                  <Text className="text-white font-semibold">Cancel</Text>
-                  <MaterialIcons name="cancel" size={24} color="white" />
-                </Pressable>
+                {Loading ? (
+                  <>
+                    {theme === "dark" ? (
+                      <>
+                        <ActivityIndicator size="large" 
+                          color={Colors.secondary} className="my-5" />
+                      </>
+                    ) : (
+                      <>
+                        <ActivityIndicator
+                          size="large"
+                          color={Colors.white} className="my-5"
+                        />
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <TouchableOpacity
+                      style={[styles.button]}
+                      onPress={() => addTask(taskTitle, taskDesc, category)}
+                      disabled={!taskTitle || !taskDesc || !category}
+                      className="bg-[#ffd72c] text-white flex flex-row items-center justify-center space-x-2 my-2 py-3 px-6 rounded-xl"
+                    >
+                      <Text className="text-black font-semibold">Add Task</Text>
+                      <AntDesign name="checksquare" size={24} color="black" />
+                    </TouchableOpacity>
+                    <Pressable
+                      style={[styles.button]}
+                      className="bg-red-600 text-white flex flex-row items-center justify-center space-x-2 my-2 py-3 px-6 rounded-xl"
+                      onPress={() =>
+                        setCategoryModalVisible(!categoryModalVisible)
+                      }
+                    >
+                      <Text className="text-white font-semibold">Cancel</Text>
+                      <MaterialIcons name="cancel" size={24} color="white" />
+                    </Pressable>
+                  </>
+                )}
               </>
             ) : (
               <></>
